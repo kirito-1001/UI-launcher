@@ -18,6 +18,7 @@ fun LauncherRoot(vm: LauncherViewModel) {
                 HomeScreen(vm)
                 DrawerOverlay(vm)
                 SettingsOverlay(vm)
+                DragOverlay(vm)
             }
         }
     }

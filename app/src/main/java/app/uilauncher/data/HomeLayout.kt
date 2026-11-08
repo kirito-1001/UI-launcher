@@ -69,8 +69,35 @@ data class HomeLayout(
         )
     }
 
+    /** The free cell closest to ([row], [col]) on [page] as (row, col), or null when the page is full. */
+    fun nearestFree(page: Int, row: Int, col: Int, cols: Int, rows: Int): Pair<Int, Int>? {
+        var best: Pair<Int, Int>? = null
+        var bestDistance = Int.MAX_VALUE
+        for (r in 0 until rows) for (c in 0 until cols) {
+            if (!isFree(page, r, c)) continue
+            val distance = (r - row) * (r - row) + (c - col) * (c - col)
+            if (distance < bestDistance) {
+                bestDistance = distance
+                best = r to c
+            }
+        }
+        return best
+    }
+
+    /** Places [key] in an exact cell. The caller must make sure the cell is free. */
+    fun addAt(key: String, page: Int, row: Int, col: Int): HomeLayout =
+        copy(items = items + HomeItem(UUID.randomUUID().toString(), page, row, col, key))
+
     fun addToDock(key: String, max: Int): HomeLayout? =
         if (dock.size >= max || dock.contains(key)) null else copy(dock = dock + key)
+
+    /** Puts [key] in the dock at [index] (clamped to the end). Null when the dock is full or already has it. */
+    fun insertInDock(key: String, index: Int, max: Int): HomeLayout? {
+        if (dock.size >= max || dock.contains(key)) return null
+        val list = dock.toMutableList()
+        list.add(index.coerceIn(0, list.size), key)
+        return copy(dock = list)
+    }
 
     fun removeFromDock(key: String): HomeLayout = copy(dock = dock.filterNot { it == key })
 

@@ -10,7 +10,9 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitLongPressOrCancellation
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -52,6 +54,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,11 +62,16 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -124,6 +132,8 @@ private fun DrawerContent(vm: LauncherViewModel) {
     Column(
         Modifier
             .fillMaxSize()
+            // While an icon is being dragged out, the drawer stays composed (it owns the gesture) but is invisible.
+            .graphicsLayer { alpha = if (vm.drawerHiddenForDrag) 0f else 1f }
             .background(MaterialTheme.colorScheme.surface.copy(alpha = settings.drawerBgOpacity / 100f))
             .pointerInput(Unit) {}
             .windowInsetsPadding(WindowInsets.systemBars)
@@ -229,9 +239,21 @@ private fun HorizontalDrawer(vm: LauncherViewModel, settings: LauncherSettings, 
     }
 }
 
+/**
+ * One app in the drawer.
+ * - Tap: launch.
+ * - Long press: the options menu.
+ * - Long press, then move the finger: the menu closes, the drawer hides and the icon follows the
+ *   finger over the home screen and dock; lifting the finger drops it there.
+ * The whole thing is one gesture so the finger keeps being tracked after the drawer is hidden.
+ */
 @Composable
 private fun DrawerCell(vm: LauncherViewModel, settings: LauncherSettings, app: AppInfo, modifier: Modifier) {
     var menu by remember { mutableStateOf(false) }
+    var coordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    val haptics = LocalHapticFeedback.current
+    val currentApp by rememberUpdatedState(app)
+
     Box(modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         AppItem(
             app = app,
@@ -241,7 +263,48 @@ private fun DrawerCell(vm: LauncherViewModel, settings: LauncherSettings, app: A
             textColor = MaterialTheme.colorScheme.onSurface,
             shadow = false,
             modifier = Modifier
-                .combinedClickable(onClick = { vm.launch(app) }, onLongClick = { menu = true })
+                .onGloballyPositioned { coordinates = it }
+                .pointerInput(Unit) {
+                    val slop = viewConfiguration.touchSlop
+                    awaitEachGesture {
+                        val down = awaitFirstDown(requireUnconsumed = false)
+                        val longPress = awaitLongPressOrCancellation(down.id)
+                        if (longPress == null) {
+                            val cur = currentEvent.changes.firstOrNull { it.id == down.id }
+                            // Finger lifted without moving much: a tap. (If it moved, the list scrolls.)
+                            if (cur != null && !cur.pressed && (cur.position - down.position).getDistance() <= slop * 2) {
+                                vm.launch(currentApp)
+                            }
+                        } else {
+                            longPress.consume()
+                            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                            menu = true
+                            var dragging = false
+                            var finished = false
+                            try {
+                                while (true) {
+                                    val event = awaitPointerEvent()
+                                    val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                                    if (!change.pressed) break
+                                    change.consume()
+                                    val root = coordinates?.localToRoot(change.position) ?: continue
+                                    if (!dragging && (change.position - longPress.position).getDistance() > slop * 2) {
+                                        dragging = true
+                                        menu = false
+                                        vm.startDrag(currentApp, root)
+                                    }
+                                    if (dragging) vm.dragTo(root)
+                                }
+                                finished = true
+                            } finally {
+                                // Normal end: drop. Interrupted (icon left composition): drop nothing.
+                                if (dragging) {
+                                    if (finished) vm.endDrag() else vm.cancelDrag()
+                                }
+                            }
+                        }
+                    }
+                }
                 .padding(4.dp),
         )
         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {

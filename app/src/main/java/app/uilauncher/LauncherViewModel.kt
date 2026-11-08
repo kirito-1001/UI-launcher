@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.AndroidViewModel
@@ -36,6 +37,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 enum class SettingsScreen { None, Main, Home, Drawer, Dock, Appearance, HiddenApps, About }
+
+/** An app dropped after being dragged out of the drawer. [pos] is in window coordinates. */
+data class DropEvent(val app: AppInfo, val pos: Offset)
 
 class LauncherViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -67,6 +71,26 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     private val _homeEvents = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val homeEvents: SharedFlow<Unit> = _homeEvents.asSharedFlow()
+
+    // ---- Dragging an app out of the drawer onto the home screen / dock ----
+
+    /** The app being dragged out of the drawer, or null. */
+    var dragApp by mutableStateOf<AppInfo?>(null)
+        private set
+
+    /** Finger position of that drag, in window coordinates. */
+    var dragPos by mutableStateOf(Offset.Zero)
+        private set
+
+    /**
+     * True from the moment a drag leaves the drawer until the drawer is opened again. The drawer stays
+     * composed (so it keeps receiving the finger) but is invisible, which reveals the home screen.
+     */
+    var drawerHiddenForDrag by mutableStateOf(false)
+        private set
+
+    private val _dropEvents = MutableSharedFlow<DropEvent>(extraBufferCapacity = 4)
+    val dropEvents: SharedFlow<DropEvent> = _dropEvents.asSharedFlow()
 
     init {
         repo.removedListener = { pkg -> updateLayout { it.removePackage(pkg) } }
@@ -154,6 +178,53 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    fun startDrag(app: AppInfo, pos: Offset) {
+        dragApp = app
+        dragPos = pos
+        drawerHiddenForDrag = true
+    }
+
+    fun dragTo(pos: Offset) {
+        dragPos = pos
+    }
+
+    /** Finger lifted: tell the home screen and dock where, then go back to the home screen. */
+    fun endDrag() {
+        val app = dragApp ?: return
+        _dropEvents.tryEmit(DropEvent(app, dragPos))
+        dragApp = null
+        drawerOpen = false
+    }
+
+    /** The drag was interrupted (for example the icon left the screen): drop nothing. */
+    fun cancelDrag() {
+        dragApp = null
+        drawerHiddenForDrag = false
+    }
+
+    /** Places [app] in the exact cell the user dropped it on. */
+    fun addToHomeAt(app: AppInfo, page: Int, row: Int, col: Int) {
+        val current = _layout.value
+        if (!current.isFree(page, row, col)) {
+            toast(R.string.no_space)
+            return
+        }
+        updateLayout { it.addAt(app.key, page, row, col) }
+    }
+
+    fun showNoSpace() = toast(R.string.no_space)
+
+    /** Puts [app] in the dock at the slot the user dropped it on. */
+    fun addToDockAt(app: AppInfo, slot: Int) {
+        val current = _layout.value
+        if (current.dock.contains(app.key)) {
+            toast(R.string.already_in_dock)
+            return
+        }
+        val result = current.insertInDock(app.key, slot, settings.value.dockCount)
+        if (result == null) toast(R.string.dock_full) else updateLayout { result }
+    }
+
     fun addToDock(app: AppInfo) {
         val current = _layout.value
         if (current.dock.contains(app.key)) {
@@ -201,6 +272,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     fun openDrawer(focusSearch: Boolean = false) {
         drawerFocusSearch = focusSearch
+        drawerHiddenForDrag = false
         drawerOpen = true
     }
 

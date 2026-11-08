@@ -47,13 +47,18 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import app.uilauncher.DropEvent
 import app.uilauncher.LauncherViewModel
 import app.uilauncher.R
 import app.uilauncher.SettingsScreen
@@ -155,7 +160,11 @@ private fun HomeGrid(
     var menuItemId by remember { mutableStateOf<String?>(null) }
     var emptyMenu by remember { mutableStateOf<Offset?>(null) }
 
-    BoxWithConstraints(modifier) {
+    // Where this grid sits in the window, to place an icon dragged in from the drawer.
+    var gridOrigin by remember { mutableStateOf(Offset.Zero) }
+    val externalApp = vm.dragApp
+
+    BoxWithConstraints(modifier.onGloballyPositioned { gridOrigin = it.positionInRoot() }) {
         val wPx = constraints.maxWidth.toFloat()
         val hPx = constraints.maxHeight.toFloat()
         val padH = with(density) { settings.homePadH.dp.toPx() }
@@ -179,12 +188,28 @@ private fun HomeGrid(
             }
         }
 
+        // Dropping an app dragged out of the drawer: onto the cell under the finger (or the nearest free one).
+        val onDrop by rememberUpdatedState<(DropEvent) -> Unit> { event ->
+            val local = event.pos - gridOrigin
+            if (local.x in 0f..wPx && local.y in 0f..hPx) {
+                val page = pagerState.currentPage
+                val target = layoutState.nearestFree(page, rowOf(local.y), colOf(local.x), cols, rows)
+                if (target == null) vm.showNoSpace() else vm.addToHomeAt(event.app, page, target.first, target.second)
+            }
+        }
+        LaunchedEffect(Unit) { vm.dropEvents.collect { onDrop(it) } }
+
         // Hovering at a screen edge while dragging flips the page (and adds one past the last page).
         val edgePx = with(density) { 28.dp.toPx() }
+        val activePos: Offset? = when {
+            dragId != null -> dragPos
+            externalApp != null -> vm.dragPos - gridOrigin
+            else -> null
+        }
         val edge = when {
-            dragId == null -> 0
-            dragPos.x < edgePx -> -1
-            dragPos.x > wPx - edgePx -> 1
+            activePos == null || activePos.y < 0f || activePos.y > hPx -> 0
+            activePos.x < edgePx -> -1
+            activePos.x > wPx - edgePx -> 1
             else -> 0
         }
         LaunchedEffect(edge, pagerState.currentPage) {
@@ -293,6 +318,23 @@ private fun HomeGrid(
                 }
             }
 
+            // Highlights the cell an icon dragged in from the drawer would land on.
+            if (externalApp != null) {
+                val local = vm.dragPos - gridOrigin
+                if (local.x in 0f..wPx && local.y in 0f..hPx) {
+                    val target = layout.nearestFree(pagerState.currentPage, rowOf(local.y), colOf(local.x), cols, rows)
+                    if (target != null) {
+                        Box(
+                            Modifier
+                                .offset { IntOffset((padH + target.second * cellW).roundToInt(), (padV + target.first * cellH).roundToInt()) }
+                                .size(cellWdp, cellHdp)
+                                .padding(4.dp)
+                                .background(Color.White.copy(alpha = 0.22f), RoundedCornerShape(16.dp))
+                        )
+                    }
+                }
+            }
+
             // The icon being dragged follows the finger.
             val dragged = layout.items.firstOrNull { it.id == dragId }
             val draggedApp = dragged?.let { apps[it.key] }
@@ -366,8 +408,21 @@ private fun Dock(
     apps: Map<String, AppInfo>,
 ) {
     val keys = layout.dock.filter { apps.containsKey(it) }.take(settings.dockCount)
+
+    // Dock bounds in the window: used to drop an icon dragged in from the drawer onto a slot.
+    var bounds by remember { mutableStateOf(Rect.Zero) }
+    val slotCount = settings.dockCount
+    fun slotAt(pos: Offset): Int =
+        ((pos.x - bounds.left) / (bounds.width / slotCount)).toInt().coerceIn(0, slotCount - 1)
+    val onDrop by rememberUpdatedState<(DropEvent) -> Unit> { event ->
+        if (bounds.contains(event.pos)) vm.addToDockAt(event.app, slotAt(event.pos))
+    }
+    LaunchedEffect(Unit) { vm.dropEvents.collect { onDrop(it) } }
+    val hoverSlot = if (vm.dragApp != null && bounds.contains(vm.dragPos)) slotAt(vm.dragPos) else -1
+
     Row(
         Modifier
+            .onGloballyPositioned { bounds = it.boundsInRoot() }
             .fillMaxWidth()
             .background(
                 Color.Black.copy(alpha = settings.dockBgOpacity / 100f),
@@ -379,7 +434,15 @@ private fun Dock(
     ) {
         for (slot in 0 until settings.dockCount) {
             val app = keys.getOrNull(slot)?.let { apps[it] }
-            Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+            Box(
+                Modifier
+                    .weight(1f)
+                    .background(
+                        if (slot == hoverSlot) Color.White.copy(alpha = 0.22f) else Color.Transparent,
+                        RoundedCornerShape(16.dp),
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
                 if (app != null) {
                     key(app.key) {
                         var menu by remember { mutableStateOf(false) }

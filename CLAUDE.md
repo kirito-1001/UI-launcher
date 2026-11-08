@@ -25,7 +25,8 @@ Owner: Khaled. He has only a phone (no computer) and wants Claude to do the codi
 - `data/HomeLayout.kt` — pages / items / dock model, JSON persistence, `fit()` when the grid shrinks.
 - `data/Settings.kt` — DataStore keys + `LauncherSettings`. New option = key + field + `toSettings()` + one row in a settings screen.
 - `ui/HomeScreen.kt` — pager grid, dock, ONE custom gesture (tap / long-press drag / swipe up) with cell math.
-- `ui/DrawerScreen.kt` — app drawer (vertical grid or horizontal pages), search, app menu.
+- `ui/DrawerScreen.kt` — app drawer (vertical grid or horizontal pages), search, app menu. Each icon is ONE gesture: tap = launch, long press = menu, long press + move = drag out (menu closes, drawer turns invisible but stays composed so it keeps the finger; state in `LauncherViewModel.dragApp/dragPos/drawerHiddenForDrag`).
+- `ui/DragOverlay.kt` — the icon that follows the finger while dragging out of the drawer. `HomeScreen.kt` (grid) and `Dock` listen to `vm.dropEvents` and each handles drops inside its own window bounds; the grid flips pages at the screen edges.
 - `ui/SettingsScreens.kt`, `ui/SettingsComponents.kt` — Nova-style settings (main list of sections, simple options first).
 - Strings: `res/values/strings.xml` (English) and `res/values-ar/strings.xml` (Arabic) — keep both in sync.
 
