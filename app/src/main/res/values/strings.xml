@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">UI launcher</string>
+
+    <!-- General -->
+    <string name="search_apps">Search apps</string>
+    <string name="clear">Clear</string>
+    <string name="back">Back</string>
+    <string name="settings">Settings</string>
+
+    <!-- App actions -->
+    <string name="remove">Remove</string>
+    <string name="app_info">App info</string>
+    <string name="uninstall">Uninstall</string>
+    <string name="add_to_home">Add to home screen</string>
+    <string name="add_to_dock">Add to dock</string>
+    <string name="hide">Hide</string>
+    <string name="added_to_home">Added to home screen</string>
+    <string name="added_to_dock">Added to dock</string>
+    <string name="dock_full">The dock is full</string>
+    <string name="already_in_dock">Already in the dock</string>
+    <string name="no_space">No space left on the home screen</string>
+    <string name="app_hidden">App hidden. You can show it again in Settings</string>
+
+    <!-- Home menu -->
+    <string name="add_page">Add page</string>
+    <string name="remove_page">Remove this page</string>
+    <string name="remove_page_not_empty">Only empty pages can be removed</string>
+    <string name="remove_page_last">The last page cannot be removed</string>
+    <string name="max_pages">Maximum number of pages reached</string>
+
+    <!-- Settings: main -->
+    <string name="settings_home">Home screen</string>
+    <string name="settings_drawer">App drawer</string>
+    <string name="settings_dock">Dock</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_about">About</string>
+    <string name="summary_home">Grid, icons, labels, search bar</string>
+    <string name="summary_drawer">Columns, icons, background, hidden apps</string>
+    <string name="summary_dock">Icons, labels, background</string>
+    <string name="summary_appearance">Theme and colors</string>
+    <string name="summary_about">Version and information</string>
+    <string name="default_launcher">Default launcher</string>
+    <string name="default_launcher_summary">Choose UI launcher as the default home app</string>
+
+    <!-- Settings: options -->
+    <string name="section_grid">Grid</string>
+    <string name="section_icons">Icons</string>
+    <string name="section_search">Search</string>
+    <string name="section_background">Background</string>
+    <string name="section_apps">Apps</string>
+    <string name="section_theme">Theme</string>
+    <string name="columns">Columns</string>
+    <string name="rows">Rows</string>
+    <string name="spacing_horizontal">Horizontal spacing</string>
+    <string name="spacing_vertical">Vertical spacing</string>
+    <string name="icon_size">Icon size</string>
+    <string name="show_labels">Show app names</string>
+    <string name="label_size">Name size</string>
+    <string name="show_search_bar">Show search bar</string>
+    <string name="background_opacity">Background opacity</string>
+    <string name="dock_icons">Number of icons</string>
+    <string name="drawer_rows">Rows (horizontal drawer)</string>
+    <string name="drawer_scroll">Scroll direction</string>
+    <string name="scroll_vertical">Vertical</string>
+    <string name="scroll_horizontal">Horizontal</string>
+    <string name="hidden_apps">Hidden apps</string>
+    <string name="hidden_apps_summary">Choose apps to hide from the drawer</string>
+    <string name="theme">Theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="dynamic_color">Dynamic colors</string>
+    <string name="dynamic_color_summary">Use wallpaper colors (Android 12 and later)</string>
+
+    <!-- About -->
+    <string name="about_version">Version %1$s</string>
+    <string name="about_description">A customizable Android launcher.</string>
+</resources>

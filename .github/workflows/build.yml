@@ -1,0 +1,72 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.10.2
+
+      - name: Build debug APK
+        id: build
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          gradle assembleDebug --console=plain --stacktrace 2>&1 | tee build.log
+
+      # Keeps a short summary of the build (errors included) on the
+      # `build-log` branch so it can be read without downloading artifacts.
+      - name: Publish build log
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          mkdir -p "$RUNNER_TEMP/logrepo" && cd "$RUNNER_TEMP/logrepo"
+          git init -q -b build-log
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          {
+            echo "run=${GITHUB_RUN_ID} sha=${GITHUB_SHA} build=${{ steps.build.outcome }}"
+            echo "-----"
+            grep -nE '^e: |^w: |error:|FAILED|What went wrong|Execution failed|BUILD (SUCCESSFUL|FAILED)|A problem occurred|Caused by' -A4 "$GITHUB_WORKSPACE/build.log" | head -400
+          } > build-log.txt
+          git add build-log.txt
+          git -c user.name=github-actions -c user.email=actions@users.noreply.github.com commit -q -m "build log ${GITHUB_RUN_ID}"
+          git push -q -f origin build-log
+
+      - name: Fail if the build failed
+        if: steps.build.outcome == 'failure'
+        run: exit 1
+
+      - name: Rename APK
+        run: cp app/build/outputs/apk/debug/app-debug.apk UI-launcher.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: UI-launcher-apk
+          path: UI-launcher.apk
+
+      - name: Publish latest APK as a release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Latest build
+          prerelease: true
+          body: Latest build from the main branch. Download UI-launcher.apk and install it.
+          files: UI-launcher.apk

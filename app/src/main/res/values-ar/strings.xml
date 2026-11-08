@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">UI launcher</string>
+
+    <!-- General -->
+    <string name="search_apps">ابحث في التطبيقات</string>
+    <string name="clear">مسح</string>
+    <string name="back">رجوع</string>
+    <string name="settings">الإعدادات</string>
+
+    <!-- App actions -->
+    <string name="remove">إزالة</string>
+    <string name="app_info">معلومات التطبيق</string>
+    <string name="uninstall">إلغاء التثبيت</string>
+    <string name="add_to_home">إضافة إلى الشاشة الرئيسية</string>
+    <string name="add_to_dock">إضافة إلى الـ Dock</string>
+    <string name="hide">إخفاء</string>
+    <string name="added_to_home">تمت الإضافة إلى الشاشة الرئيسية</string>
+    <string name="added_to_dock">تمت الإضافة إلى الـ Dock</string>
+    <string name="dock_full">الـ Dock ممتلئ</string>
+    <string name="already_in_dock">التطبيق موجود بالفعل في الـ Dock</string>
+    <string name="no_space">لا توجد مساحة في الشاشة الرئيسية</string>
+    <string name="app_hidden">تم إخفاء التطبيق. يمكنك إظهاره من الإعدادات</string>
+
+    <!-- Home menu -->
+    <string name="add_page">إضافة صفحة</string>
+    <string name="remove_page">حذف هذه الصفحة</string>
+    <string name="remove_page_not_empty">يمكن حذف الصفحات الفارغة فقط</string>
+    <string name="remove_page_last">لا يمكن حذف الصفحة الأخيرة</string>
+    <string name="max_pages">وصلت إلى الحد الأقصى لعدد الصفحات</string>
+
+    <!-- Settings: main -->
+    <string name="settings_home">الشاشة الرئيسية</string>
+    <string name="settings_drawer">درج التطبيقات</string>
+    <string name="settings_dock">الـ Dock</string>
+    <string name="settings_appearance">المظهر</string>
+    <string name="settings_about">حول</string>
+    <string name="summary_home">الشبكة والأيقونات والأسماء وشريط البحث</string>
+    <string name="summary_drawer">الأعمدة والأيقونات والخلفية والتطبيقات المخفية</string>
+    <string name="summary_dock">الأيقونات والأسماء والخلفية</string>
+    <string name="summary_appearance">السمة والألوان</string>
+    <string name="summary_about">الإصدار والمعلومات</string>
+    <string name="default_launcher">المشغّل الافتراضي</string>
+    <string name="default_launcher_summary">اختر UI launcher ليكون الشاشة الرئيسية الافتراضية</string>
+
+    <!-- Settings: options -->
+    <string name="section_grid">الشبكة</string>
+    <string name="section_icons">الأيقونات</string>
+    <string name="section_search">البحث</string>
+    <string name="section_background">الخلفية</string>
+    <string name="section_apps">التطبيقات</string>
+    <string name="section_theme">السمة</string>
+    <string name="columns">الأعمدة</string>
+    <string name="rows">الصفوف</string>
+    <string name="spacing_horizontal">المسافة الأفقية</string>
+    <string name="spacing_vertical">المسافة العمودية</string>
+    <string name="icon_size">حجم الأيقونات</string>
+    <string name="show_labels">إظهار أسماء التطبيقات</string>
+    <string name="label_size">حجم الأسماء</string>
+    <string name="show_search_bar">إظهار شريط البحث</string>
+    <string name="background_opacity">كثافة الخلفية</string>
+    <string name="dock_icons">عدد الأيقونات</string>
+    <string name="drawer_rows">الصفوف (الدرج الأفقي)</string>
+    <string name="drawer_scroll">اتجاه التمرير</string>
+    <string name="scroll_vertical">عمودي</string>
+    <string name="scroll_horizontal">أفقي</string>
+    <string name="hidden_apps">التطبيقات المخفية</string>
+    <string name="hidden_apps_summary">اختر التطبيقات التي تريد إخفاءها من الدرج</string>
+    <string name="theme">السمة</string>
+    <string name="theme_system">النظام</string>
+    <string name="theme_light">فاتح</string>
+    <string name="theme_dark">داكن</string>
+    <string name="dynamic_color">الألوان الديناميكية</string>
+    <string name="dynamic_color_summary">استخدام ألوان الخلفية (Android 12 وما بعده)</string>
+
+    <!-- About -->
+    <string name="about_version">الإصدار %1$s</string>
+    <string name="about_description">مشغّل أندرويد قابل للتخصيص.</string>
+</resources>
