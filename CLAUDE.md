@@ -32,6 +32,7 @@ Owner: Khaled. He has only a phone (no computer) and wants Claude to do the codi
 - `ui/HomeScreen.kt` — pager grid, dock, ONE custom gesture (tap / long-press drag / swipe up) with cell math.
 - `ui/DrawerScreen.kt` — app drawer (vertical grid or horizontal pages), search, app menu. Each icon is ONE gesture: tap = launch, long press = menu, long press + move = drag out (menu closes, drawer turns invisible but stays composed so it keeps the finger; state in `LauncherViewModel.dragApp/dragPos/drawerHiddenForDrag`).
 - `ui/DragOverlay.kt` — the icon that follows the finger while dragging out of the drawer. `HomeScreen.kt` (grid) and `Dock` listen to `vm.dropEvents` and each handles drops inside its own window bounds; the grid flips pages at the screen edges.
+- Wallpaper: no own picker; `vm.openWallpaperPicker()` opens the system chooser (ACTION_SET_WALLPAPER) from the home empty-space menu and Settings > Home screen. Status/nav bar hiding: `Keys.hideStatusBar/hideNavBar`, applied in `LauncherRoot` via WindowInsetsController (transient bars on swipe).
 - `ui/SettingsScreens.kt`, `ui/SettingsComponents.kt` — Nova-style settings (main list of sections, simple options first).
 - Strings: `res/values/strings.xml` (English) and `res/values-ar/strings.xml` (Arabic) — keep both in sync.
 
@@ -50,5 +51,5 @@ Owner: Khaled. He has only a phone (no computer) and wants Claude to do the codi
 
 ## Status
 - Phase 1 done and tested by Khaled (home, dock, drawer, settings, drag from drawer to home/dock).
-- Phase 2 in progress, in this order: icon packs (done; the 'not applied on home screen' bug was fixed, awaiting his confirmation) -> icon shape/corner radius (done, awaiting his test) -> per-app icon editor (done, awaiting his test) -> folders (home screen done, awaiting build/test; dock folders + drag-out from popup deferred) -> wallpaper + hide status/nav bar.
+- Phase 2 in progress, in this order: icon packs (done; the 'not applied on home screen' bug was fixed, awaiting his confirmation) -> icon shape/corner radius (done, awaiting his test) -> per-app icon editor (done, awaiting his test) -> folders (done, awaiting his test; dock folders + drag-out from popup deferred) -> wallpaper + hide status/nav bar (done, awaiting build/test). Phase 2 complete after his test; next is Phase 3 (real widgets).
 - Full approved feature list (17 sections) and phase order 2-6 were agreed with him; cloud sync, online theme download and floating widgets are deferred.

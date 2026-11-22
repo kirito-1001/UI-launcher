@@ -112,6 +112,17 @@ private fun HomeSettings(vm: LauncherViewModel) {
 
         SectionHeader(stringResource(R.string.section_search))
         SwitchRow(stringResource(R.string.show_search_bar), s.showSearchBar) { vm.set(Keys.showSearchBar, it) }
+
+        SectionHeader(stringResource(R.string.section_system_bars))
+        SwitchRow(stringResource(R.string.hide_status_bar), s.hideStatusBar) { vm.set(Keys.hideStatusBar, it) }
+        SwitchRow(stringResource(R.string.hide_nav_bar), s.hideNavBar, stringResource(R.string.hide_nav_bar_summary)) { vm.set(Keys.hideNavBar, it) }
+
+        SectionHeader(stringResource(R.string.wallpaper))
+        NavRow(
+            title = stringResource(R.string.wallpaper_change),
+            summary = stringResource(R.string.wallpaper_summary),
+            onClick = vm::openWallpaperPicker,
+        )
     }
 }
 

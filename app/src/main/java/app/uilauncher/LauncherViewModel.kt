@@ -334,6 +334,13 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         drawerOpen = false
     }
 
+    /** Opens the system wallpaper chooser (static and live wallpapers). */
+    fun openWallpaperPicker() {
+        val intent = Intent.createChooser(Intent(Intent.ACTION_SET_WALLPAPER), null)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        runCatching { ctx.startActivity(intent) }
+    }
+
     fun openSettings() {
         drawerOpen = false
         screen = SettingsScreen.Main

@@ -39,6 +39,15 @@
     <string name="disband_folder">Delete folder (keep apps)</string>
     <string name="take_out_of_folder">Move to home screen</string>
 
+    <!-- System bars and wallpaper -->
+    <string name="section_system_bars">System bars</string>
+    <string name="hide_status_bar">Hide status bar</string>
+    <string name="hide_nav_bar">Hide navigation bar</string>
+    <string name="hide_nav_bar_summary">Swipe from the screen edge to show it temporarily</string>
+    <string name="wallpaper">Wallpaper</string>
+    <string name="wallpaper_change">Change wallpaper</string>
+    <string name="wallpaper_summary">Choose a picture or a live wallpaper</string>
+
     <!-- Home menu -->
     <string name="add_page">Add page</string>
     <string name="remove_page">Remove this page</string>

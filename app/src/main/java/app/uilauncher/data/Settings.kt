@@ -53,6 +53,10 @@ object Keys {
     // Icons: shape of the apps' own icons (see IconShapes) and corner radius for the rounded square.
     val iconShape = intPreferencesKey("icon_shape")
     val iconCorner = intPreferencesKey("icon_corner")
+
+    // System bars
+    val hideStatusBar = booleanPreferencesKey("hide_status_bar")
+    val hideNavBar = booleanPreferencesKey("hide_nav_bar")
 }
 
 data class LauncherSettings(
@@ -86,6 +90,9 @@ data class LauncherSettings(
     val iconPack: String = "",
     val iconShape: Int = IconShapes.ORIGINAL,
     val iconCorner: Int = 30,
+    // System bars
+    val hideStatusBar: Boolean = false,
+    val hideNavBar: Boolean = false,
 )
 
 fun Preferences.toSettings(): LauncherSettings {
@@ -116,5 +123,7 @@ fun Preferences.toSettings(): LauncherSettings {
         iconPack = this[Keys.iconPack] ?: d.iconPack,
         iconShape = this[Keys.iconShape] ?: d.iconShape,
         iconCorner = this[Keys.iconCorner] ?: d.iconCorner,
+        hideStatusBar = this[Keys.hideStatusBar] ?: d.hideStatusBar,
+        hideNavBar = this[Keys.hideNavBar] ?: d.hideNavBar,
     )
 }

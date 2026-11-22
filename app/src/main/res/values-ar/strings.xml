@@ -39,6 +39,15 @@
     <string name="disband_folder">حذف المجلد (مع إبقاء التطبيقات)</string>
     <string name="take_out_of_folder">نقل إلى الشاشة الرئيسية</string>
 
+    <!-- System bars and wallpaper -->
+    <string name="section_system_bars">أشرطة النظام</string>
+    <string name="hide_status_bar">إخفاء شريط الحالة</string>
+    <string name="hide_nav_bar">إخفاء شريط التنقل</string>
+    <string name="hide_nav_bar_summary">اسحب من حافة الشاشة لإظهاره مؤقتاً</string>
+    <string name="wallpaper">الخلفية</string>
+    <string name="wallpaper_change">تغيير الخلفية</string>
+    <string name="wallpaper_summary">اختر صورة أو خلفية متحركة</string>
+
     <!-- Home menu -->
     <string name="add_page">إضافة صفحة</string>
     <string name="remove_page">حذف هذه الصفحة</string>

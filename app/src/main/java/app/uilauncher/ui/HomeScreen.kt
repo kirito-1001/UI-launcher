@@ -466,6 +466,10 @@ private fun HomeGrid(
                             onClick = { emptyMenu = null; vm.removePage(pagerState.currentPage) },
                         )
                         DropdownMenuItem(
+                            text = { Text(stringResource(R.string.wallpaper)) },
+                            onClick = { emptyMenu = null; vm.openWallpaperPicker() },
+                        )
+                        DropdownMenuItem(
                             text = { Text(stringResource(R.string.settings)) },
                             onClick = { emptyMenu = null; vm.openSettings() },
                         )
