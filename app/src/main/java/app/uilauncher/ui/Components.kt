@@ -6,10 +6,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -32,10 +35,12 @@ val LocalAppRepository = compositionLocalOf<AppRepository> { error("AppRepositor
 @Composable
 fun AppIcon(app: AppInfo, size: Dp, modifier: Modifier = Modifier) {
     val repo = LocalAppRepository.current
-    // Reload when the icon pack changes.
+    // Reload when the icon pack changes. The state is reset only when this slot shows a different app;
+    // on a pack change the old icon stays until the new one is ready (no blank flash).
     val version by repo.iconVersion.collectAsState()
-    val bitmap by produceState<ImageBitmap?>(repo.cachedIcon(app.key), app.key, version) {
-        if (value == null) value = repo.loadIcon(app.key)
+    var bitmap by remember(app.key) { mutableStateOf(repo.cachedIcon(app.key)) }
+    LaunchedEffect(app.key, version) {
+        bitmap = repo.cachedIcon(app.key) ?: repo.loadIcon(app.key) ?: bitmap
     }
     Box(modifier.size(size)) {
         val bmp = bitmap

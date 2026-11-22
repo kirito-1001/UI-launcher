@@ -22,7 +22,7 @@ Owner: Khaled. He has only a phone (no computer) and wants Claude to do the codi
 - `MainActivity.kt` — HOME activity; `onNewIntent` handles the home button.
 - `LauncherViewModel.kt` — all state + actions (layout, settings, drawer/settings navigation).
 - `data/AppRepository.kt` — installed apps via `LauncherApps`, icon cache, launching.
-- `data/IconPacks.kt` — icon packs: `IconPacks.installed()` finds packs (ADW/Nova/Apex/GO actions, listed in the manifest `<queries>`), `IconPack` reads `appfilter.xml` (exact icon per activity, then per package; `wrap()` themes apps the pack lacks using iconback/iconmask/iconupon/scale). The chosen pack (`Keys.iconPack`, one choice for home+dock+drawer) is applied in `AppRepository.loadIcon`; changing it clears the cache and bumps `iconVersion`, which `AppIcon` observes.
+- `data/IconPacks.kt` — icon packs: `IconPacks.installed()` finds packs (ADW/Nova/Apex/GO actions, listed in the manifest `<queries>`), `IconPack` reads `appfilter.xml` (exact icon per activity, then per package; `wrap()` themes apps the pack lacks using iconback/iconmask/iconupon/scale). The chosen pack (`Keys.iconPack`, one choice for home+dock+drawer) is applied in `AppRepository.loadIcon`; changing it clears the cache and bumps `iconVersion`; `AppIcon` reloads on `(app.key, iconVersion)` via LaunchedEffect (never gate the reload on the current bitmap being null: icons already on screen must refresh).
 - `data/HomeLayout.kt` — pages / items / dock model, JSON persistence, `fit()` when the grid shrinks.
 - `data/Settings.kt` — DataStore keys + `LauncherSettings`. New option = key + field + `toSettings()` + one row in a settings screen.
 - `ui/HomeScreen.kt` — pager grid, dock, ONE custom gesture (tap / long-press drag / swipe up) with cell math.
