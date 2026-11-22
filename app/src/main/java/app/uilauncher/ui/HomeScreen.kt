@@ -184,17 +184,29 @@ private fun HomeGrid(
             val r = rowOf(p.y)
             val page = pagerState.currentPage
             return layoutState.items.firstOrNull {
-                it.page == page && it.row == r && it.col == c && appsState.containsKey(it.key)
+                it.page == page && it.row == r && it.col == c &&
+                    (appsState.containsKey(it.key) || layoutState.folderOf(it) != null)
             }
         }
+        // The icon (other than [ignoreId]) sitting in the given cell of the current page, if any.
+        fun occupant(r: Int, c: Int, ignoreId: String? = null): HomeItem? =
+            layoutState.items.firstOrNull {
+                it.page == pagerState.currentPage && it.row == r && it.col == c && it.id != ignoreId &&
+                    (appsState.containsKey(it.key) || layoutState.folderOf(it) != null)
+            }
 
         // Dropping an app dragged out of the drawer: onto the cell under the finger (or the nearest free one).
         val onDrop by rememberUpdatedState<(DropEvent) -> Unit> { event ->
             val local = event.pos - gridOrigin
             if (local.x in 0f..wPx && local.y in 0f..hPx) {
                 val page = pagerState.currentPage
-                val target = layoutState.nearestFree(page, rowOf(local.y), colOf(local.x), cols, rows)
-                if (target == null) vm.showNoSpace() else vm.addToHomeAt(event.app, page, target.first, target.second)
+                val onto = occupant(rowOf(local.y), colOf(local.x))
+                if (onto != null) {
+                    vm.dropAppOnItem(event.app, onto.id)
+                } else {
+                    val target = layoutState.nearestFree(page, rowOf(local.y), colOf(local.x), cols, rows)
+                    if (target == null) vm.showNoSpace() else vm.addToHomeAt(event.app, page, target.first, target.second)
+                }
             }
         }
         LaunchedEffect(Unit) { vm.dropEvents.collect { onDrop(it) } }
@@ -239,8 +251,14 @@ private fun HomeGrid(
                             if (cur == null || !cur.pressed) {
                                 // Finger lifted: a tap.
                                 if (cur != null && (cur.position - start).getDistance() <= slop * 2) {
-                                    val app = itemAt(start)?.let { appsState[it.key] }
-                                    if (app != null) vm.launch(app)
+                                    val tapped = itemAt(start)
+                                    val folder = tapped?.let { layoutState.folderOf(it) }
+                                    if (folder != null) {
+                                        vm.openFolder(folder.id)
+                                    } else {
+                                        val app = tapped?.let { appsState[it.key] }
+                                        if (app != null) vm.launch(app)
+                                    }
                                 }
                             } else {
                                 // Finger moved: follow it to detect a swipe up.
@@ -289,7 +307,14 @@ private fun HomeGrid(
                                         val page = pagerState.currentPage
                                         val r = rowOf(dragPos.y)
                                         val c = colOf(dragPos.x)
-                                        if (layoutState.isFree(page, r, c, id)) vm.moveItem(id, page, r, c)
+                                        val onto = occupant(r, c, id)
+                                        val draggedIsFolder = layoutState.items.firstOrNull { it.id == id }
+                                            ?.let { layoutState.folderOf(it) != null } == true
+                                        if (onto != null) {
+                                            if (!draggedIsFolder) vm.mergeIntoFolder(id, onto.id)
+                                        } else if (layoutState.isFree(page, r, c, id)) {
+                                            vm.moveItem(id, page, r, c)
+                                        }
                                     }
                                 }
                             }
@@ -305,14 +330,20 @@ private fun HomeGrid(
                 Box(Modifier.fillMaxSize()) {
                     for (item in layout.items) {
                         if (item.page != page || item.id == dragId) continue
-                        val app = apps[item.key] ?: continue
+                        val folder = layout.folderOf(item)
+                        val app = apps[item.key]
+                        if (folder == null && app == null) continue
                         Box(
                             Modifier
                                 .offset { IntOffset((padH + item.col * cellW).roundToInt(), (padV + item.row * cellH).roundToInt()) }
                                 .size(cellWdp, cellHdp),
                             contentAlignment = Alignment.Center,
                         ) {
-                            AppItem(app, settings.homeIconSize, settings.homeShowLabels, settings.homeLabelSize)
+                            if (folder != null) {
+                                FolderItem(folder, apps, settings.homeIconSize, settings.homeShowLabels, settings.homeLabelSize)
+                            } else if (app != null) {
+                                AppItem(app, settings.homeIconSize, settings.homeShowLabels, settings.homeLabelSize)
+                            }
                         }
                     }
                 }
@@ -322,7 +353,9 @@ private fun HomeGrid(
             if (externalApp != null) {
                 val local = vm.dragPos - gridOrigin
                 if (local.x in 0f..wPx && local.y in 0f..hPx) {
-                    val target = layout.nearestFree(pagerState.currentPage, rowOf(local.y), colOf(local.x), cols, rows)
+                    val onto = occupant(rowOf(local.y), colOf(local.x))
+                    val target = if (onto != null) onto.row to onto.col
+                    else layout.nearestFree(pagerState.currentPage, rowOf(local.y), colOf(local.x), cols, rows)
                     if (target != null) {
                         Box(
                             Modifier
@@ -338,7 +371,21 @@ private fun HomeGrid(
             // The icon being dragged follows the finger.
             val dragged = layout.items.firstOrNull { it.id == dragId }
             val draggedApp = dragged?.let { apps[it.key] }
-            if (draggedApp != null) {
+            val draggedFolder = dragged?.let { layout.folderOf(it) }
+            if (draggedApp != null || draggedFolder != null) {
+                // Highlight the icon this one would merge with.
+                if (dragged != null && draggedFolder == null) {
+                    val onto = occupant(rowOf(dragPos.y), colOf(dragPos.x), dragged.id)
+                    if (onto != null) {
+                        Box(
+                            Modifier
+                                .offset { IntOffset((padH + onto.col * cellW).roundToInt(), (padV + onto.row * cellH).roundToInt()) }
+                                .size(cellWdp, cellHdp)
+                                .padding(4.dp)
+                                .background(Color.White.copy(alpha = 0.22f), RoundedCornerShape(16.dp))
+                        )
+                    }
+                }
                 Box(
                     Modifier
                         .offset { IntOffset((dragPos.x - cellW / 2).roundToInt(), (dragPos.y - cellH / 2).roundToInt()) }
@@ -346,7 +393,11 @@ private fun HomeGrid(
                         .graphicsLayer { scaleX = 1.12f; scaleY = 1.12f; alpha = 0.92f },
                     contentAlignment = Alignment.Center,
                 ) {
-                    AppItem(draggedApp, settings.homeIconSize, settings.homeShowLabels, settings.homeLabelSize)
+                    if (draggedFolder != null) {
+                        FolderItem(draggedFolder, apps, settings.homeIconSize, settings.homeShowLabels, settings.homeLabelSize)
+                    } else if (draggedApp != null) {
+                        AppItem(draggedApp, settings.homeIconSize, settings.homeShowLabels, settings.homeLabelSize)
+                    }
                 }
             }
 
@@ -375,6 +426,27 @@ private fun HomeGrid(
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.remove)) },
                             onClick = { menuItemId = null; vm.removeItem(menuItem.id) },
+                        )
+                    }
+                }
+            }
+
+            // Menu for a long-pressed folder.
+            val menuFolder = menuItem?.let { layout.folderOf(it) }
+            if (menuItem != null && menuFolder != null) {
+                Box(
+                    Modifier
+                        .offset { IntOffset((padH + menuItem.col * cellW).roundToInt(), (padV + menuItem.row * cellH).roundToInt()) }
+                        .size(cellWdp, cellHdp)
+                ) {
+                    DropdownMenu(expanded = true, onDismissRequest = { menuItemId = null }) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.open_folder)) },
+                            onClick = { menuItemId = null; vm.openFolder(menuFolder.id) },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.disband_folder)) },
+                            onClick = { menuItemId = null; vm.disbandFolder(menuFolder.id) },
                         )
                     }
                 }

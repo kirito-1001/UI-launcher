@@ -33,6 +33,12 @@
     <string name="no_space">No space left on the home screen</string>
     <string name="app_hidden">App hidden. You can show it again in Settings</string>
 
+    <!-- Folders -->
+    <string name="folder_default_name">Folder</string>
+    <string name="open_folder">Open folder</string>
+    <string name="disband_folder">Delete folder (keep apps)</string>
+    <string name="take_out_of_folder">Move to home screen</string>
+
     <!-- Home menu -->
     <string name="add_page">Add page</string>
     <string name="remove_page">Remove this page</string>

@@ -254,11 +254,53 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     fun removeFromDock(key: String) = updateLayout { it.removeFromDock(key) }
 
+    // ---- Folders ----
+
+    /** The folder whose popup is open, or null. */
+    var openFolderId by mutableStateOf<String?>(null)
+        private set
+
+    fun openFolder(id: String) {
+        openFolderId = id
+    }
+
+    fun closeFolder() {
+        openFolderId = null
+    }
+
+    private fun newFolderName() = ctx.getString(R.string.folder_default_name)
+
+    /** An icon already on the home screen was dropped on another one: they become a folder (or join it). */
+    fun mergeIntoFolder(dragId: String, targetId: String) {
+        updateLayout { it.mergeInto(dragId, targetId, newFolderName()) ?: it }
+    }
+
+    /** An app dragged out of the drawer was dropped on a home icon. */
+    fun dropAppOnItem(app: AppInfo, targetId: String) {
+        updateLayout { it.dropAppOn(targetId, app.key, newFolderName()) ?: it }
+    }
+
+    fun renameFolder(id: String, name: String) = updateLayout { it.rename(id, name) }
+
+    fun takeOutOfFolder(folderId: String, key: String) {
+        val s = settings.value
+        val result = _layout.value.takeOut(folderId, key, s.homeCols, s.homeRows)
+        if (result == null) toast(R.string.no_space) else updateLayout { result }
+        if (_layout.value.folder(folderId) == null) openFolderId = null
+    }
+
+    fun disbandFolder(id: String) {
+        val s = settings.value
+        updateLayout { it.disband(id, s.homeCols, s.homeRows) }
+        if (openFolderId == id) openFolderId = null
+    }
+
     // ---- Apps ----
 
     fun launch(app: AppInfo) {
         repo.launch(app)
         drawerOpen = false
+        openFolderId = null
     }
 
     fun openAppInfo(app: AppInfo) = repo.openAppInfo(app)
@@ -341,6 +383,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun onHomePressed() {
         when {
             iconEditApp != null -> iconEditApp = null
+            openFolderId != null -> openFolderId = null
             screen != SettingsScreen.None -> screen = SettingsScreen.None
             drawerOpen -> drawerOpen = false
             else -> _homeEvents.tryEmit(Unit)

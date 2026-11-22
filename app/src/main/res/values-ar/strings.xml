@@ -33,6 +33,12 @@
     <string name="no_space">لا توجد مساحة في الشاشة الرئيسية</string>
     <string name="app_hidden">تم إخفاء التطبيق. يمكنك إظهاره من الإعدادات</string>
 
+    <!-- Folders -->
+    <string name="folder_default_name">مجلد</string>
+    <string name="open_folder">فتح المجلد</string>
+    <string name="disband_folder">حذف المجلد (مع إبقاء التطبيقات)</string>
+    <string name="take_out_of_folder">نقل إلى الشاشة الرئيسية</string>
+
     <!-- Home menu -->
     <string name="add_page">إضافة صفحة</string>
     <string name="remove_page">حذف هذه الصفحة</string>

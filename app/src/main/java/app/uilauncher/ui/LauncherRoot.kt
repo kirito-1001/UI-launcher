@@ -16,6 +16,7 @@ fun LauncherRoot(vm: LauncherViewModel) {
         LauncherTheme(settings) {
             Box(Modifier.fillMaxSize()) {
                 HomeScreen(vm)
+                FolderOverlay(vm)
                 DrawerOverlay(vm)
                 SettingsOverlay(vm)
                 IconEditor(vm)
