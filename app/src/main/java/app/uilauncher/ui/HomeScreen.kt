@@ -361,6 +361,10 @@ private fun HomeGrid(
                 ) {
                     DropdownMenu(expanded = true, onDismissRequest = { menuItemId = null }) {
                         DropdownMenuItem(
+                            text = { Text(stringResource(R.string.edit_icon)) },
+                            onClick = { menuItemId = null; vm.editIcon(menuApp) },
+                        )
+                        DropdownMenuItem(
                             text = { Text(stringResource(R.string.app_info)) },
                             onClick = { menuItemId = null; vm.openAppInfo(menuApp) },
                         )
@@ -456,6 +460,10 @@ private fun Dock(
                                 .padding(4.dp),
                         )
                         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.edit_icon)) },
+                                onClick = { menu = false; vm.editIcon(app) },
+                            )
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.app_info)) },
                                 onClick = { menu = false; vm.openAppInfo(app) },

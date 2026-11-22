@@ -11,6 +11,17 @@
     <!-- App actions -->
     <string name="remove">إزالة</string>
     <string name="app_info">معلومات التطبيق</string>
+    <string name="edit_icon">تعديل الأيقونة</string>
+    <string name="icon_from_pack">اختيار أيقونة من الحزمة</string>
+    <string name="icon_from_pack_need">اختر حزمة أيقونات أولاً من الإعدادات ← الأيقونات</string>
+    <string name="icon_from_gallery">اختيار صورة من المعرض</string>
+    <string name="icon_restore">استعادة الأيقونة الأصلية</string>
+    <string name="search_icons">ابحث في الأيقونات</string>
+    <string name="crop_title">قص الصورة</string>
+    <string name="crop_hint">اسحب للتحريك واقرص للتكبير</string>
+    <string name="save">حفظ</string>
+    <string name="cancel">إلغاء</string>
+    <string name="image_error">تعذّر فتح هذه الصورة</string>
     <string name="uninstall">إلغاء التثبيت</string>
     <string name="add_to_home">إضافة إلى الشاشة الرئيسية</string>
     <string name="add_to_dock">إضافة إلى الـ Dock</string>

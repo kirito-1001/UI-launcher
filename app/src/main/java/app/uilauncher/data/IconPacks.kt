@@ -164,6 +164,15 @@ class IconPack private constructor(private val res: Resources, val packageName: 
         return out
     }
 
+    /** Names of every icon in the pack (for the icon picker), sorted. */
+    fun allIconNames(): List<String> = byComponent.values.distinct().sorted()
+
+    /** One icon of the pack by name, or null if it cannot be read. */
+    fun iconBitmap(name: String, px: Int): Bitmap? {
+        val d = drawable(name) ?: return null
+        return runCatching { d.toBitmap(px, px) }.getOrNull()
+    }
+
     /** A few icons from the pack, to preview it in the settings. */
     fun sample(count: Int, px: Int): List<Bitmap> {
         val out = ArrayList<Bitmap>()

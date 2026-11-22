@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.pm.LauncherActivityInfo
 import android.content.pm.LauncherApps
+import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Looper
 import android.os.Process
@@ -48,6 +49,7 @@ class AppRepository(private val context: Context) {
     val iconVersion: StateFlow<Int> = _iconVersion.asStateFlow()
 
     private val sampleCache = ConcurrentHashMap<String, List<ImageBitmap>>()
+    private val customIcons = CustomIcons(context)
 
     @Volatile
     private var activities: Map<String, LauncherActivityInfo> = emptyMap()
@@ -153,6 +155,25 @@ class AppRepository(private val context: Context) {
         setIconStyle(style, forcePackReload = true)
     }
 
+    /** The icon pack currently applied, or null (used by the icon picker). */
+    fun currentPack(): IconPack? = applied.pack
+
+    fun hasCustomIcon(key: String): Boolean = customIcons.has(key)
+
+    /** Gives one app its own icon, in every section. [shapeable]: follow the chosen icon shape. */
+    suspend fun setCustomIcon(key: String, bitmap: Bitmap, shapeable: Boolean) {
+        withContext(Dispatchers.IO) { customIcons.save(key, bitmap, shapeable) }
+        iconCache.remove(key)
+        _iconVersion.value = _iconVersion.value + 1
+    }
+
+    /** Back to the app's normal icon (or the pack's). */
+    suspend fun clearCustomIcon(key: String) {
+        withContext(Dispatchers.IO) { customIcons.remove(key) }
+        iconCache.remove(key)
+        _iconVersion.value = _iconVersion.value + 1
+    }
+
     /** A few icons of [packageName], to preview the pack in the settings. */
     suspend fun packSample(packageName: String): List<ImageBitmap> = withContext(Dispatchers.Default) {
         sampleCache[packageName]?.let { return@withContext it }
@@ -170,11 +191,16 @@ class AppRepository(private val context: Context) {
         val a = applied
         val bitmap = runCatching {
             val component = info.componentName
-            // Pack icon first; otherwise the app's own icon, themed by the pack or cut to the chosen shape.
-            val themed = a.pack?.exact(component.packageName, component.className, ICON_PX)
-            val result = themed ?: run {
-                val original = info.getIcon(0)
-                a.pack?.wrap(original, key, ICON_PX) ?: IconShapes.apply(original, a.style, ICON_PX)
+            val custom = customIcons.load(key)
+            val result = if (custom != null) {
+                // The icon the user picked for this app wins over everything else.
+                if (custom.shapeable) IconShapes.clip(custom.bitmap, a.style, ICON_PX) else custom.bitmap
+            } else {
+                // Pack icon first; otherwise the app's own icon, themed by the pack or cut to the chosen shape.
+                a.pack?.exact(component.packageName, component.className, ICON_PX) ?: run {
+                    val original = info.getIcon(0)
+                    a.pack?.wrap(original, key, ICON_PX) ?: IconShapes.apply(original, a.style, ICON_PX)
+                }
             }
             result.asImageBitmap()
         }.getOrNull() ?: return@withContext null

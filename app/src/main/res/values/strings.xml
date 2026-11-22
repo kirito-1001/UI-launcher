@@ -11,6 +11,17 @@
     <!-- App actions -->
     <string name="remove">Remove</string>
     <string name="app_info">App info</string>
+    <string name="edit_icon">Edit icon</string>
+    <string name="icon_from_pack">Choose from icon pack</string>
+    <string name="icon_from_pack_need">Select an icon pack first in Settings > Icons</string>
+    <string name="icon_from_gallery">Choose image from gallery</string>
+    <string name="icon_restore">Restore original icon</string>
+    <string name="search_icons">Search icons</string>
+    <string name="crop_title">Crop image</string>
+    <string name="crop_hint">Drag to move, pinch to zoom</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="image_error">Could not open this image</string>
     <string name="uninstall">Uninstall</string>
     <string name="add_to_home">Add to home screen</string>
     <string name="add_to_dock">Add to dock</string>

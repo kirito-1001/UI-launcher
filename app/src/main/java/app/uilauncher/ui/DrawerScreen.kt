@@ -321,6 +321,10 @@ private fun DrawerCell(vm: LauncherViewModel, settings: LauncherSettings, app: A
                 onClick = { menu = false; vm.hideApp(app) },
             )
             DropdownMenuItem(
+                text = { Text(stringResource(R.string.edit_icon)) },
+                onClick = { menu = false; vm.editIcon(app) },
+            )
+            DropdownMenuItem(
                 text = { Text(stringResource(R.string.app_info)) },
                 onClick = { menu = false; vm.openAppInfo(app) },
             )

@@ -3,6 +3,7 @@ package app.uilauncher.data
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
 import android.graphics.drawable.AdaptiveIconDrawable
@@ -53,6 +54,17 @@ object IconShapes {
             }
         }
         return path
+    }
+
+    /** A ready-made square image (for example from the gallery) cut to the chosen shape. */
+    fun clip(source: Bitmap, style: IconStyle, px: Int): Bitmap {
+        if (style.shape == ORIGINAL) return source
+        val out = Bitmap.createBitmap(px, px, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(out)
+        canvas.clipPath(path(style.shape, style.corner, px.toFloat()))
+        val paint = Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG)
+        canvas.drawBitmap(source, null, RectF(0f, 0f, px.toFloat(), px.toFloat()), paint)
+        return out
     }
 
     /** Draws [original] cut to the chosen shape. [ORIGINAL] returns it unchanged. */

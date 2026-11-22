@@ -3,6 +3,7 @@ package app.uilauncher
 import android.app.Application
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.MediaStore
 import android.widget.Toast
@@ -308,9 +309,38 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    // ---- Per-app icon editor ----
+
+    /** The app whose icon is being edited, or null. */
+    var iconEditApp by mutableStateOf<AppInfo?>(null)
+        private set
+
+    fun editIcon(app: AppInfo) {
+        iconEditApp = app
+    }
+
+    fun closeIconEditor() {
+        iconEditApp = null
+    }
+
+    fun saveCustomIcon(app: AppInfo, bitmap: Bitmap, shapeable: Boolean) {
+        viewModelScope.launch {
+            repo.setCustomIcon(app.key, bitmap, shapeable)
+            iconEditApp = null
+        }
+    }
+
+    fun restoreOriginalIcon(app: AppInfo) {
+        viewModelScope.launch {
+            repo.clearCustomIcon(app.key)
+            iconEditApp = null
+        }
+    }
+
     /** Home button pressed while the launcher is already on screen. */
     fun onHomePressed() {
         when {
+            iconEditApp != null -> iconEditApp = null
             screen != SettingsScreen.None -> screen = SettingsScreen.None
             drawerOpen -> drawerOpen = false
             else -> _homeEvents.tryEmit(Unit)
