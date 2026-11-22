@@ -51,5 +51,5 @@ Owner: Khaled. He has only a phone (no computer) and wants Claude to do the codi
 
 ## Status
 - Phase 1 done and tested by Khaled (home, dock, drawer, settings, drag from drawer to home/dock).
-- Phase 2 in progress, in this order: icon packs (done; the 'not applied on home screen' bug was fixed, awaiting his confirmation) -> icon shape/corner radius (done, awaiting his test) -> per-app icon editor (done, awaiting his test) -> folders (done, awaiting his test; dock folders + drag-out from popup deferred) -> wallpaper + hide status/nav bar (done, awaiting build/test). Phase 2 complete after his test; next is Phase 3 (real widgets).
+- Phase 2 coded: icon packs, icon shape/corner and per-app icon editor are CONFIRMED working by Khaled. Folders (home only; dock folders + drag-out from popup deferred) and wallpaper picker + hide status/nav bar are built (build OK) but NOT yet tested by him. Next is Phase 3 (real widgets) once he says to start.
 - Full approved feature list (17 sections) and phase order 2-6 were agreed with him; cloud sync, online theme download and floating widgets are deferred.
