@@ -18,6 +18,8 @@ import androidx.lifecycle.viewModelScope
 import app.uilauncher.data.AppInfo
 import app.uilauncher.data.AppRepository
 import app.uilauncher.data.HomeLayout
+import app.uilauncher.data.IconShapes
+import app.uilauncher.data.IconStyle
 import app.uilauncher.data.Keys
 import app.uilauncher.data.LauncherSettings
 import app.uilauncher.data.dataStore
@@ -96,13 +98,13 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         repo.removedListener = { pkg -> updateLayout { it.removePackage(pkg) } }
         repo.start()
 
-        // Apply the chosen icon pack to every icon. Read straight from the store so the saved pack is
-        // used from the first icon, instead of briefly starting with the default one.
+        // Apply the chosen icon style (pack + shape + corners) to every icon. Read straight from the store
+        // so the saved style is used from the first icon, instead of briefly starting with the default one.
         viewModelScope.launch {
             ctx.dataStore.data
-                .map { it[Keys.iconPack] ?: "" }
+                .map { IconStyle(it[Keys.iconPack] ?: "", it[Keys.iconShape] ?: IconShapes.ORIGINAL, it[Keys.iconCorner] ?: 30) }
                 .distinctUntilChanged()
-                .collect { repo.setIconPack(it) }
+                .collect { repo.setIconStyle(it) }
         }
 
         viewModelScope.launch {

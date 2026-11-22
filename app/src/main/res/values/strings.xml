@@ -38,6 +38,14 @@
     <string name="section_icon_pack">Icon pack</string>
     <string name="icon_pack_default">Default icons</string>
     <string name="icon_pack_default_summary">Use each app\'s own icon</string>
+    <string name="section_icon_shape">Icon shape</string>
+    <string name="icon_shape_note">Applies to each app\'s own icon. Icons that come from an icon pack keep the pack\'s look.</string>
+    <string name="icon_shape">Shape</string>
+    <string name="shape_original">Original</string>
+    <string name="shape_circle">Circle</string>
+    <string name="shape_rounded">Rounded square</string>
+    <string name="shape_squircle">Squircle</string>
+    <string name="icon_corner">Corner roundness</string>
     <string name="icon_pack_none">No icon packs found. Install one from the Play Store and it will appear here.</string>
     <string name="settings_appearance">Appearance</string>
     <string name="settings_about">About</string>

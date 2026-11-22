@@ -49,6 +49,10 @@ object Keys {
 
     // Icons: package name of the chosen icon pack, empty = each app's own icon. Applies everywhere.
     val iconPack = stringPreferencesKey("icon_pack")
+
+    // Icons: shape of the apps' own icons (see IconShapes) and corner radius for the rounded square.
+    val iconShape = intPreferencesKey("icon_shape")
+    val iconCorner = intPreferencesKey("icon_corner")
 }
 
 data class LauncherSettings(
@@ -80,6 +84,8 @@ data class LauncherSettings(
     val dynamicColor: Boolean = true,
     // Icons
     val iconPack: String = "",
+    val iconShape: Int = IconShapes.ORIGINAL,
+    val iconCorner: Int = 30,
 )
 
 fun Preferences.toSettings(): LauncherSettings {
@@ -108,5 +114,7 @@ fun Preferences.toSettings(): LauncherSettings {
         themeMode = this[Keys.themeMode] ?: d.themeMode,
         dynamicColor = this[Keys.dynamicColor] ?: d.dynamicColor,
         iconPack = this[Keys.iconPack] ?: d.iconPack,
+        iconShape = this[Keys.iconShape] ?: d.iconShape,
+        iconCorner = this[Keys.iconCorner] ?: d.iconCorner,
     )
 }

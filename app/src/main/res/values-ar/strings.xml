@@ -38,6 +38,14 @@
     <string name="section_icon_pack">حزمة الأيقونات</string>
     <string name="icon_pack_default">الأيقونات الأصلية</string>
     <string name="icon_pack_default_summary">استخدام أيقونة كل تطبيق كما هي</string>
+    <string name="section_icon_shape">شكل الأيقونات</string>
+    <string name="icon_shape_note">يُطبَّق على أيقونة كل تطبيق. الأيقونات القادمة من حزمة أيقونات تحتفظ بشكل الحزمة.</string>
+    <string name="icon_shape">الشكل</string>
+    <string name="shape_original">الأصلي</string>
+    <string name="shape_circle">دائرة</string>
+    <string name="shape_rounded">مربع مستدير</string>
+    <string name="shape_squircle">سكويركل</string>
+    <string name="icon_corner">استدارة الزوايا</string>
     <string name="icon_pack_none">لم يتم العثور على حزم أيقونات. ثبّت حزمة من متجر Play وستظهر هنا.</string>
     <string name="settings_appearance">المظهر</string>
     <string name="settings_about">حول</string>

@@ -23,6 +23,7 @@ Owner: Khaled. He has only a phone (no computer) and wants Claude to do the codi
 - `LauncherViewModel.kt` — all state + actions (layout, settings, drawer/settings navigation).
 - `data/AppRepository.kt` — installed apps via `LauncherApps`, icon cache, launching.
 - `data/IconPacks.kt` — icon packs: `IconPacks.installed()` finds packs (ADW/Nova/Apex/GO actions, listed in the manifest `<queries>`), `IconPack` reads `appfilter.xml` (exact icon per activity, then per package; `wrap()` themes apps the pack lacks using iconback/iconmask/iconupon/scale). The chosen pack (`Keys.iconPack`, one choice for home+dock+drawer) is applied in `AppRepository.loadIcon`; changing it clears the cache and bumps `iconVersion`; `AppIcon` reloads on `(app.key, iconVersion)` via LaunchedEffect (never gate the reload on the current bitmap being null: icons already on screen must refresh).
+- `data/IconShapes.kt` — `IconStyle(pack, shape, corner)` (one style for home+dock+drawer) and `IconShapes.apply()` that re-cuts the apps' own icons to circle / rounded square (corner %) / squircle (adaptive icons: both layers are redrawn and clipped; old-style icons go smaller on a white backdrop). Pack icons are never re-shaped. `AppRepository.setIconStyle()` applies it; `Applied` holds style+pack as one object.
 - `data/HomeLayout.kt` — pages / items / dock model, JSON persistence, `fit()` when the grid shrinks.
 - `data/Settings.kt` — DataStore keys + `LauncherSettings`. New option = key + field + `toSettings()` + one row in a settings screen.
 - `ui/HomeScreen.kt` — pager grid, dock, ONE custom gesture (tap / long-press drag / swipe up) with cell math.
@@ -46,5 +47,5 @@ Owner: Khaled. He has only a phone (no computer) and wants Claude to do the codi
 
 ## Status
 - Phase 1 done and tested by Khaled (home, dock, drawer, settings, drag from drawer to home/dock).
-- Phase 2 in progress, in this order: icon packs (engine + picker in Settings > Icons: done, awaiting his test) -> icon shape/corner radius and per-app icon editor (gallery image, crop, pack icon) -> folders -> wallpaper + hide status/nav bar.
+- Phase 2 in progress, in this order: icon packs (done, tested) -> icon shape/corner radius (done, awaiting his test) -> per-app icon editor (gallery image, crop, pack icon) -> folders -> wallpaper + hide status/nav bar.
 - Full approved feature list (17 sections) and phase order 2-6 were agreed with him; cloud sync, online theme download and floating widgets are deferred.

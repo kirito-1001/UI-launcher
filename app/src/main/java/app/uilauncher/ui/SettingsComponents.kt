@@ -4,6 +4,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -116,12 +118,17 @@ fun SliderRow(title: String, value: Int, range: IntRange, unit: String = "", onC
     }
 }
 
-/** A row of chips where exactly one option is selected. */
+/** Chips where exactly one option is selected. They wrap onto a new line when they do not fit. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ChoiceRow(title: String, options: List<String>, selected: Int, onSelect: (Int) -> Unit) {
     Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp)) {
         Text(title, style = MaterialTheme.typography.bodyLarge)
-        Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(
+            Modifier.padding(top = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
             options.forEachIndexed { index, label ->
                 FilterChip(
                     selected = index == selected,

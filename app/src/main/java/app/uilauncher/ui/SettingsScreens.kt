@@ -45,6 +45,7 @@ import app.uilauncher.R
 import app.uilauncher.SettingsScreen
 import app.uilauncher.data.IconPackInfo
 import app.uilauncher.data.IconPacks
+import app.uilauncher.data.IconShapes
 import app.uilauncher.data.Keys
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -186,6 +187,27 @@ private fun IconSettings(vm: LauncherViewModel) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
             )
+        }
+
+        SectionHeader(stringResource(R.string.section_icon_shape))
+        Text(
+            stringResource(R.string.icon_shape_note),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
+        )
+        ChoiceRow(
+            title = stringResource(R.string.icon_shape),
+            options = listOf(
+                stringResource(R.string.shape_original),
+                stringResource(R.string.shape_circle),
+                stringResource(R.string.shape_rounded),
+                stringResource(R.string.shape_squircle),
+            ),
+            selected = s.iconShape,
+        ) { vm.set(Keys.iconShape, it) }
+        if (s.iconShape == IconShapes.ROUNDED) {
+            SliderRow(stringResource(R.string.icon_corner), s.iconCorner, 0..50, "%") { vm.set(Keys.iconCorner, it) }
         }
     }
 }
