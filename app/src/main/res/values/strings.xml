@@ -33,6 +33,12 @@
     <string name="settings_home">Home screen</string>
     <string name="settings_drawer">App drawer</string>
     <string name="settings_dock">Dock</string>
+    <string name="settings_icons">Icons</string>
+    <string name="summary_icons">Icon pack and original icons</string>
+    <string name="section_icon_pack">Icon pack</string>
+    <string name="icon_pack_default">Default icons</string>
+    <string name="icon_pack_default_summary">Use each app\'s own icon</string>
+    <string name="icon_pack_none">No icon packs found. Install one from the Play Store and it will appear here.</string>
     <string name="settings_appearance">Appearance</string>
     <string name="settings_about">About</string>
     <string name="summary_home">Grid, icons, labels, search bar</string>

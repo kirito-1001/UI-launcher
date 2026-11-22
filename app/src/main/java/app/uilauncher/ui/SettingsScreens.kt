@@ -7,6 +7,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,12 +15,14 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,10 +30,12 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -38,7 +43,11 @@ import app.uilauncher.BuildConfig
 import app.uilauncher.LauncherViewModel
 import app.uilauncher.R
 import app.uilauncher.SettingsScreen
+import app.uilauncher.data.IconPackInfo
+import app.uilauncher.data.IconPacks
 import app.uilauncher.data.Keys
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun SettingsOverlay(vm: LauncherViewModel) {
@@ -58,6 +67,7 @@ fun SettingsOverlay(vm: LauncherViewModel) {
             SettingsScreen.Home -> HomeSettings(vm)
             SettingsScreen.Drawer -> DrawerSettings(vm)
             SettingsScreen.Dock -> DockSettings(vm)
+            SettingsScreen.Icons -> IconSettings(vm)
             SettingsScreen.Appearance -> AppearanceSettings(vm)
             SettingsScreen.HiddenApps -> HiddenAppsSettings(vm)
             SettingsScreen.About -> AboutSettings(vm)
@@ -78,6 +88,7 @@ private fun MainSettings(vm: LauncherViewModel) {
         NavRow(stringResource(R.string.settings_home), stringResource(R.string.summary_home)) { vm.openSettingsScreen(SettingsScreen.Home) }
         NavRow(stringResource(R.string.settings_drawer), stringResource(R.string.summary_drawer)) { vm.openSettingsScreen(SettingsScreen.Drawer) }
         NavRow(stringResource(R.string.settings_dock), stringResource(R.string.summary_dock)) { vm.openSettingsScreen(SettingsScreen.Dock) }
+        NavRow(stringResource(R.string.settings_icons), stringResource(R.string.summary_icons)) { vm.openSettingsScreen(SettingsScreen.Icons) }
         NavRow(stringResource(R.string.settings_appearance), stringResource(R.string.summary_appearance)) { vm.openSettingsScreen(SettingsScreen.Appearance) }
         NavRow(stringResource(R.string.settings_about), stringResource(R.string.summary_about)) { vm.openSettingsScreen(SettingsScreen.About) }
     }
@@ -145,6 +156,60 @@ private fun DockSettings(vm: LauncherViewModel) {
 
         SectionHeader(stringResource(R.string.section_background))
         SliderRow(stringResource(R.string.background_opacity), s.dockBgOpacity, 0..100, "%") { vm.set(Keys.dockBgOpacity, it) }
+    }
+}
+
+/** Icon pack choice. It applies to the home screen, the dock and the drawer together. */
+@Composable
+private fun IconSettings(vm: LauncherViewModel) {
+    val s by vm.settings.collectAsState()
+    val context = LocalContext.current
+    val packs by produceState(emptyList<IconPackInfo>()) {
+        value = withContext(Dispatchers.Default) { IconPacks.installed(context) }
+    }
+    SettingsPage(stringResource(R.string.settings_icons), onBack = vm::settingsBack) {
+        SectionHeader(stringResource(R.string.section_icon_pack))
+        IconPackRow(
+            vm = vm,
+            packageName = "",
+            title = stringResource(R.string.icon_pack_default),
+            summary = stringResource(R.string.icon_pack_default_summary),
+            selected = s.iconPack.isEmpty(),
+        )
+        packs.forEach { pack ->
+            IconPackRow(vm, pack.packageName, pack.label, null, s.iconPack == pack.packageName)
+        }
+        if (packs.isEmpty()) {
+            Text(
+                stringResource(R.string.icon_pack_none),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun IconPackRow(vm: LauncherViewModel, packageName: String, title: String, summary: String?, selected: Boolean) {
+    val choose = { vm.set(Keys.iconPack, packageName) }
+    val sample by produceState(emptyList<ImageBitmap>(), packageName) {
+        value = if (packageName.isEmpty()) emptyList() else vm.repo.packSample(packageName)
+    }
+    Row(
+        Modifier.fillMaxWidth().clickable { choose() }.padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RadioButton(selected = selected, onClick = { choose() })
+        Column(Modifier.weight(1f).padding(start = 4.dp)) {
+            Text(title, style = MaterialTheme.typography.bodyLarge)
+            if (summary != null) {
+                Text(summary, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        sample.forEach { icon ->
+            Image(bitmap = icon, contentDescription = null, modifier = Modifier.padding(start = 6.dp).size(32.dp))
+        }
     }
 }
 

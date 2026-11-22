@@ -33,6 +33,12 @@
     <string name="settings_home">الشاشة الرئيسية</string>
     <string name="settings_drawer">درج التطبيقات</string>
     <string name="settings_dock">الـ Dock</string>
+    <string name="settings_icons">الأيقونات</string>
+    <string name="summary_icons">حزمة الأيقونات والأيقونات الأصلية</string>
+    <string name="section_icon_pack">حزمة الأيقونات</string>
+    <string name="icon_pack_default">الأيقونات الأصلية</string>
+    <string name="icon_pack_default_summary">استخدام أيقونة كل تطبيق كما هي</string>
+    <string name="icon_pack_none">لم يتم العثور على حزم أيقونات. ثبّت حزمة من متجر Play وستظهر هنا.</string>
     <string name="settings_appearance">المظهر</string>
     <string name="settings_about">حول</string>
     <string name="summary_home">الشبكة والأيقونات والأسماء وشريط البحث</string>

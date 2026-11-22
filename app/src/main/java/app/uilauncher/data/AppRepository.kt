@@ -34,6 +34,18 @@ class AppRepository(private val context: Context) {
 
     private val iconCache = ConcurrentHashMap<String, ImageBitmap>()
 
+    // The icon pack applied to every icon (home, dock, drawer). Changing it bumps [iconVersion] so icons reload.
+    @Volatile
+    private var pack: IconPack? = null
+
+    @Volatile
+    private var packName: String? = null
+
+    private val _iconVersion = MutableStateFlow(0)
+    val iconVersion: StateFlow<Int> = _iconVersion.asStateFlow()
+
+    private val sampleCache = ConcurrentHashMap<String, List<ImageBitmap>>()
+
     @Volatile
     private var activities: Map<String, LauncherActivityInfo> = emptyMap()
 
@@ -45,6 +57,7 @@ class AppRepository(private val context: Context) {
             if (packageName != null) {
                 evict(packageName)
                 removedListener?.invoke(packageName)
+                if (packageName == this@AppRepository.packName) reloadPack()
             }
             reload()
         }
@@ -54,7 +67,10 @@ class AppRepository(private val context: Context) {
         }
 
         override fun onPackageChanged(packageName: String?, user: UserHandle?) {
-            if (packageName != null) evict(packageName)
+            if (packageName != null) {
+                evict(packageName)
+                if (packageName == this@AppRepository.packName) reloadPack()
+            }
             reload()
         }
 
@@ -103,14 +119,53 @@ class AppRepository(private val context: Context) {
 
     fun cachedIcon(key: String): ImageBitmap? = iconCache[key]
 
+    /** Applies an icon pack to all icons. An empty name means every app's own icon. */
+    fun setIconPack(packageName: String) {
+        if (packageName == packName) return
+        packName = packageName
+        scope.launch {
+            val loaded = if (packageName.isEmpty()) null else IconPack.load(context, packageName)
+            if (packName != packageName) return@launch // a newer choice arrived while loading
+            pack = loaded
+            iconCache.clear()
+            _iconVersion.value = _iconVersion.value + 1
+        }
+    }
+
+    /** The pack was updated or removed: read it again (or fall back to the original icons). */
+    private fun reloadPack() {
+        val name = packName ?: return
+        sampleCache.remove(name)
+        packName = null
+        setIconPack(name)
+    }
+
+    /** A few icons of [packageName], to preview the pack in the settings. */
+    suspend fun packSample(packageName: String): List<ImageBitmap> = withContext(Dispatchers.Default) {
+        sampleCache[packageName]?.let { return@withContext it }
+        val sample = runCatching {
+            IconPack.load(context, packageName)?.sample(4, SAMPLE_PX)?.map { it.asImageBitmap() }
+        }.getOrNull() ?: emptyList()
+        sampleCache[packageName] = sample
+        sample
+    }
+
     suspend fun loadIcon(key: String): ImageBitmap? = withContext(Dispatchers.Default) {
         val cached = iconCache[key]
         if (cached != null) return@withContext cached
         val info = activities[key] ?: return@withContext null
+        val p = pack
         val bitmap = runCatching {
-            info.getIcon(0).toBitmap(ICON_PX, ICON_PX).asImageBitmap()
+            val component = info.componentName
+            val themed = p?.exact(component.packageName, component.className, ICON_PX)
+            val result = themed ?: run {
+                val original = info.getIcon(0)
+                p?.wrap(original, key, ICON_PX) ?: original.toBitmap(ICON_PX, ICON_PX)
+            }
+            result.asImageBitmap()
         }.getOrNull() ?: return@withContext null
-        iconCache[key] = bitmap
+        // Do not cache an icon made with a pack that was replaced in the meantime.
+        if (pack === p) iconCache[key] = bitmap
         bitmap
     }
 
@@ -128,5 +183,6 @@ class AppRepository(private val context: Context) {
 
     private companion object {
         const val ICON_PX = 192
+        const val SAMPLE_PX = 96
     }
 }

@@ -36,7 +36,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-enum class SettingsScreen { None, Main, Home, Drawer, Dock, Appearance, HiddenApps, About }
+enum class SettingsScreen { None, Main, Home, Drawer, Dock, Icons, Appearance, HiddenApps, About }
 
 /** An app dropped after being dragged out of the drawer. [pos] is in window coordinates. */
 data class DropEvent(val app: AppInfo, val pos: Offset)
@@ -95,6 +95,15 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     init {
         repo.removedListener = { pkg -> updateLayout { it.removePackage(pkg) } }
         repo.start()
+
+        // Apply the chosen icon pack to every icon. Read straight from the store so the saved pack is
+        // used from the first icon, instead of briefly starting with the default one.
+        viewModelScope.launch {
+            ctx.dataStore.data
+                .map { it[Keys.iconPack] ?: "" }
+                .distinctUntilChanged()
+                .collect { repo.setIconPack(it) }
+        }
 
         viewModelScope.launch {
             val prefs = ctx.dataStore.data.first()

@@ -16,12 +16,13 @@ Owner: Khaled. He has only a phone (no computer) and wants Claude to do the codi
 - The workflow also writes the errors/summary of every build to the `build-log` branch (`build-log.txt`).
   Read it with `git fetch origin build-log && git show origin/build-log:build-log.txt`.
 - Signing uses the committed `app/debug.keystore` so each new APK installs over the previous one.
-- Versions: AGP 8.7.3, Kotlin 2.0.21, Compose BOM 2024.10.01, minSdk 26, targetSdk/compileSdk 35, package `app.uilauncher`.
+- Versions: AGP 8.7.3, Kotlin 2.0.21, Compose BOM 2024.10.01, minSdk 29 (Android 10; owner's decision), targetSdk/compileSdk 35, package `app.uilauncher`.
 
 ## Structure (`app/src/main/java/app/uilauncher/`)
 - `MainActivity.kt` — HOME activity; `onNewIntent` handles the home button.
 - `LauncherViewModel.kt` — all state + actions (layout, settings, drawer/settings navigation).
 - `data/AppRepository.kt` — installed apps via `LauncherApps`, icon cache, launching.
+- `data/IconPacks.kt` — icon packs: `IconPacks.installed()` finds packs (ADW/Nova/Apex/GO actions, listed in the manifest `<queries>`), `IconPack` reads `appfilter.xml` (exact icon per activity, then per package; `wrap()` themes apps the pack lacks using iconback/iconmask/iconupon/scale). The chosen pack (`Keys.iconPack`, one choice for home+dock+drawer) is applied in `AppRepository.loadIcon`; changing it clears the cache and bumps `iconVersion`, which `AppIcon` observes.
 - `data/HomeLayout.kt` — pages / items / dock model, JSON persistence, `fit()` when the grid shrinks.
 - `data/Settings.kt` — DataStore keys + `LauncherSettings`. New option = key + field + `toSettings()` + one row in a settings screen.
 - `ui/HomeScreen.kt` — pager grid, dock, ONE custom gesture (tap / long-press drag / swipe up) with cell math.
@@ -44,4 +45,6 @@ Owner: Khaled. He has only a phone (no computer) and wants Claude to do the codi
 5. Deferred: dock pages, external themes, the owner's own new features (he will describe them later).
 
 ## Status
-- Phase 1 code written and pushed; waiting for the first successful GitHub Actions build and on-device testing by Khaled.
+- Phase 1 done and tested by Khaled (home, dock, drawer, settings, drag from drawer to home/dock).
+- Phase 2 in progress, in this order: icon packs (engine + picker in Settings > Icons: done, awaiting his test) -> icon shape/corner radius and per-app icon editor (gallery image, crop, pack icon) -> folders -> wallpaper + hide status/nav bar.
+- Full approved feature list (17 sections) and phase order 2-6 were agreed with him; cloud sync, online theme download and floating widgets are deferred.

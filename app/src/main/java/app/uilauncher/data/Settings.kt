@@ -46,6 +46,9 @@ object Keys {
     // Appearance
     val themeMode = intPreferencesKey("theme_mode")
     val dynamicColor = booleanPreferencesKey("dynamic_color")
+
+    // Icons: package name of the chosen icon pack, empty = each app's own icon. Applies everywhere.
+    val iconPack = stringPreferencesKey("icon_pack")
 }
 
 data class LauncherSettings(
@@ -75,6 +78,8 @@ data class LauncherSettings(
     // Appearance: 0 = system, 1 = light, 2 = dark
     val themeMode: Int = 0,
     val dynamicColor: Boolean = true,
+    // Icons
+    val iconPack: String = "",
 )
 
 fun Preferences.toSettings(): LauncherSettings {
@@ -102,5 +107,6 @@ fun Preferences.toSettings(): LauncherSettings {
         dockBgOpacity = this[Keys.dockBgOpacity] ?: d.dockBgOpacity,
         themeMode = this[Keys.themeMode] ?: d.themeMode,
         dynamicColor = this[Keys.dynamicColor] ?: d.dynamicColor,
+        iconPack = this[Keys.iconPack] ?: d.iconPack,
     )
 }

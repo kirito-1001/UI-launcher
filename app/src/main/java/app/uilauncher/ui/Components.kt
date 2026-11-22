@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
@@ -31,7 +32,9 @@ val LocalAppRepository = compositionLocalOf<AppRepository> { error("AppRepositor
 @Composable
 fun AppIcon(app: AppInfo, size: Dp, modifier: Modifier = Modifier) {
     val repo = LocalAppRepository.current
-    val bitmap by produceState<ImageBitmap?>(repo.cachedIcon(app.key), app.key) {
+    // Reload when the icon pack changes.
+    val version by repo.iconVersion.collectAsState()
+    val bitmap by produceState<ImageBitmap?>(repo.cachedIcon(app.key), app.key, version) {
         if (value == null) value = repo.loadIcon(app.key)
     }
     Box(modifier.size(size)) {
